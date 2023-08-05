@@ -93,6 +93,22 @@ def bayesian_optimized_xgb_train(X_train, X_test, y_train, y_test):
     # MAE
     print("优化后的训练集MAE: %f" % mean_absolute_error(y_train, model.predict(dtrain)))
     print("优化后的测试集MAE: %f" % mean_absolute_error(y_test, y_pred))
+    # 保存模型文件
+    model.save_model('model/xgb.model')
+
+
+def predict():
+    # 加载模型文件
+    model = xgb.Booster(model_file='model/xgb.model')
+    # 预测
+    data = pd.read_excel('data/test.xlsx',index_col=0)
+    # 调整列顺序MDEC-23,MDEO-12,maxssO,minHBa,VCH-5,maxdssC,VC-5,mindssC,minHsOH,ETA_Shape_Y,maxHsOH,minHBint5,minsssN,maxHBint8,LipoaffinityIndex,BCUTc-1h,ATSc3,ETA_BetaP_s,ETA_EtaP_F,mindsCH
+    data = data.loc[:,['MDEC-23', 'MDEO-12', 'maxssO', 'minHBa', 'VCH-5', 'maxdssC', 'VC-5', 'mindssC', 'minHsOH', 'ETA_Shape_Y', 'maxHsOH', 'minHBint5', 'minsssN', 'maxHBint8', 'LipoaffinityIndex', 'BCUTc-1h', 'ATSc3', 'ETA_BetaP_s', 'ETA_EtaP_F', 'mindsCH']]
+    print(data)
+    dtest = xgb.DMatrix(data)
+    y_pred = model.predict(dtest)
+    data['y_pred'] = y_pred
+    data.to_excel('data/result.xlsx')
 
 
 def normal_xgb_train(X_train, X_test, y_train, y_test):
@@ -236,18 +252,19 @@ def svr_train(X_train, X_test, y_train, y_test):
 
 
 def main():
-    data = data_loader()
-    X = data.iloc[:, 2:]
-    Y = data.loc[:, ['pIC50']]
-
-    # X筛除掉BCUTc-1l,SPC=6,ShsOH,minsOH,maxHBint5这五列
-    X = X.drop(['BCUTc-1l', 'SPC-6', 'SHsOH', 'minsOH', 'maxHBint5', 'LipoaffinityIndex'], axis=1)
-
-    # 划分数据集
-    X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.1, random_state=123)
-    normal_xgb_train(X_train, X_test, y_train, y_test)
-    bayesian_optimized_xgb_train(X_train, X_test, y_train, y_test)
-    # svr_train(X_train, X_test, y_train, y_test)
+    # data = data_loader()
+    # X = data.iloc[:, 2:]
+    # Y = data.loc[:, ['pIC50']]
+    #
+    # # X筛除掉BCUTc-1l,SPC=6,ShsOH,minsOH,maxHBint5这五列
+    # X = X.drop(['BCUTc-1l', 'SPC-6', 'SHsOH', 'minsOH', 'maxHBint5'], axis=1)
+    #
+    # # 划分数据集
+    # X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.1, random_state=123)
+    # # normal_xgb_train(X_train, X_test, y_train, y_test)
+    # bayesian_optimized_xgb_train(X_train, X_test, y_train, y_test)
+    # # svr_train(X_train, X_test, y_train, y_test)
+    predict()
 
 
 if __name__ == '__main__':
