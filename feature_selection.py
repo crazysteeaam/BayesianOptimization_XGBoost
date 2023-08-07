@@ -64,10 +64,10 @@ def get_feature_importance(data):
     feature_importance = feature_importance.merge(dcor_list, left_index=True, right_index=True)
 
     # 第五个指标是importance*另外三个之和的倒数（perason取绝对值）
-    feature_importance['score'] = (1 / (
+    feature_importance['score'] = (
             abs(feature_importance['mi']) +
             abs(feature_importance['pearson']) +
-            abs(feature_importance['dcor']))) * feature_importance['importance']
+            abs(feature_importance['dcor'])) * feature_importance['importance']
 
     return feature_importance
 
